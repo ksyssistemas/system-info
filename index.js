@@ -77,7 +77,7 @@ const calculateDiskUsage = async (layers) => {
 };
 
 // Endpoint para obter informações detalhadas dos recursos da máquina
-app.get('/system-info', async (req, res) => {
+app.get('/info/api', async (req, res) => {
   try {
     const [cpu, memory, osInfo, currentLoad, disk, containerStats] = await Promise.all([
       si.cpu(),

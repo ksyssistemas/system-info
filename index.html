@@ -86,7 +86,7 @@
     document.getElementById('fetchButton').addEventListener('click', () => {
       const vpsCost = parseFloat(document.getElementById('vpsCost').value);
 
-      fetch('http://localhost:5000/system-info') // Atualizado para porta 5000
+      fetch('https://skillfy.com.br/info/api') // Atualizado para porta 5000
         .then(response => response.json())
         .then(data => {
           // Processador
