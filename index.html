@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informações do Sistema</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Estilos adicionais */
+    .container-item {
+      margin-bottom: 16px; /* Adiciona espaço entre os cards */
+    }
+
+    /* Ajusta o tamanho do input de custo da VPS */
+    #vpsCost {
+      width: 220px;
+    }
+
+    /* Ajusta o espaçamento entre os cards */
+    .card {
+      margin-bottom: 16px;
+    }
+
+    /* Ajusta o tamanho dos cards para desktop */
+    @media (min-width: 640px) {
+      .card {
+        width: calc(100% - 20px); /* Ajusta a largura dos cards */
+        margin-right: 20px; /* Adiciona espaçamento à direita */
+      }
+    }
+
+    /* Ajusta o tamanho dos cards para tablet */
+    @media (min-width: 768px) {
+      .card {
+        width: calc(50% - 20px); /* Ajusta a largura dos cards */
+        margin-right: 20px; /* Adiciona espaçamento à direita */
+      }
+    }
+
+    /* Ajusta o tamanho dos cards para desktop grande */
+    @media (min-width: 1024px) {
+      .card {
+        width: calc(25% - 20px); /* Ajusta a largura dos cards */
+        margin-right: 20px; /* Adiciona espaçamento à direita */
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Informações do Sistema</h1>
+    <div class="flex mb-4">
+      <label for="vpsCost" class="block text-gray-700 mr-4">Custo da VPS (R$):</label>
+      <input type="number" id="vpsCost" step="0.01" placeholder="Informe o custo da VPS"
+        class="border border-gray-300 rounded-md py-2 px-3 block">
+    </div>
+    <button id="fetchButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-4">
+      Obter Informações
+    </button>
+    <div class="container mt-8 flex flex-wrap">
+      <div class="card bg-white shadow-md rounded-lg p-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+        <h2 class="text-xl font-bold text-blue-600">Processador</h2>
+        <p><strong>Modelo:</strong> <span id="cpuModel"></span></p>
+        <p><strong>Carga Atual:</strong> <span id="cpuLoad"></span>%</p>
+      </div>
+      <div class="card bg-white shadow-md rounded-lg p-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+        <h2 class="text-xl font-bold text-blue-600">Memória</h2>
+        <p><strong>Total:</strong> <span id="memoryTotal"></span> GB</p>
+        <p><strong>Usada:</strong> <span id="memoryUsed"></span> GB</p>
+      </div>
+      <div class="card bg-white shadow-md rounded-lg p-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+        <h2 class="text-xl font-bold text-blue-600">Disco</h2>
+        <p><strong>Total:</strong> <span id="diskTotal"></span> GB</p>
+        <p><strong>Usado:</strong> <span id="diskUsed"></span> GB</p>
+      </div>
+    </div>
+    <div class="card bg-white shadow-md rounded-lg p-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+      <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-4">Containers</h2>
+      <div id="containersList" class="container-list">
+        <!-- Containers serão inseridos aqui -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('fetchButton').addEventListener('click', () => {
+      const vpsCost = parseFloat(document.getElementById('vpsCost').value);
+
+      fetch('http://localhost:5000/system-info') // Atualizado para porta 5000
+        .then(response => response.json())
+        .then(data => {
+          // Processador
+          document.getElementById('cpuModel').textContent = data.cpu.manufacturer + ' ' + data.cpu.brand;
+          document.getElementById('cpuLoad').textContent = data.currentLoad.currentLoad.toFixed(2);
+
+          // Memória
+          const totalMemoryGB = (data.memory.total / (1024 ** 3)).toFixed(2);
+          const usedMemoryGB = ((data.memory.total - data.memory.available) / (1024 ** 3)).toFixed(2);
+          document.getElementById('memoryTotal').textContent = totalMemoryGB;
+          document.getElementById('memoryUsed').textContent = usedMemoryGB;
+
+          // Disco
+          const totalDiskGB = (data.disk[0].size / (1024 ** 3)).toFixed(2);
+          const usedDiskGB = (data.disk[0].used / (1024 ** 3)).toFixed(2);
+          document.getElementById('diskTotal').textContent = totalDiskGB;
+          document.getElementById('diskUsed').textContent = usedDiskGB;
+
+          // Containers
+          const containersList = data.containers.map(container => {
+            const totalMemoryGB = (container.memory.total / (1024 ** 3)).toFixed(2);
+            const usedMemoryGB = (container.memory.usage / (1024 ** 3)).toFixed(2);
+            const cpuCost = (vpsCost * (container.cpu / 100)).toFixed(2);
+            const memoryCost = (vpsCost * (usedMemoryGB / totalMemoryGB)).toFixed(2);
+            const totalCost = (parseFloat(cpuCost) + parseFloat(memoryCost)).toFixed(2);
+            const diskUsedGB = (container.diskUsage / (1024 ** 3)).toFixed(2);
+
+            return `
+              <div class="container-item bg-white shadow-md rounded-lg p-4">
+                <p><strong>Nome:</strong> ${container.name}</p>
+                <p><strong>CPU:</strong> ${container.cpu}%</p>
+                <p><strong>Memória Total:</strong> ${totalMemoryGB} GB</p>
+                <p><strong>Memória Usada:</strong> ${usedMemoryGB} GB</p>
+                <p><strong>Disco Usado:</strong> ${diskUsedGB} GB</p>
+                <p><strong>Custo (CPU):</strong> R$ ${cpuCost}</p>
+                <p><strong>Custo (Memória):</strong> R$ ${memoryCost}</p>
+                <p><strong>Custo Total:</strong> R$ ${totalCost}</p>
+              </div>
+            `;
+          }).join('');
+          document.getElementById('containersList').innerHTML = containersList;
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+        });
+    });
+  </script>
+</body>
+</html>
