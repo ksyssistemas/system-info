@@ -73,7 +73,7 @@
         <p><strong>Uso de Disco:</strong> <span id="folderDiskUsage"></span> MB</p>
       </div>
     </div>
-    <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-4">Containers</h2>
+    <h2 class="text-xl font-bold text-blue-600 mt-8 mb-4">Containers</h2>
     <div id="containersList" class="flex flex-wrap">
       <!-- Containers serão inseridos aqui -->
     </div>
@@ -83,7 +83,7 @@
     document.getElementById('fetchButton').addEventListener('click', () => {
       const vpsCost = parseFloat(document.getElementById('vpsCost').value);
 
-      fetch('https://skillfy.com.br/info/api') // Atualizado para porta 5000
+      fetch('http://localhost:5000/info/api') // Atualizado para porta 5000
         .then(response => response.json())
         .then(data => {
           // Processador
@@ -114,16 +114,18 @@
             const totalCost = (parseFloat(cpuCost) + parseFloat(memoryCost)).toFixed(2);
             const diskUsedGB = container.diskUsage;
             const roundedCPU = container.cpu.toFixed(2); // Arredondamento da CPU para 2 casas decimais
-
+            const containerNameWithoutSlash = container.name.replace(/^\//, '');
             return `
               <div class="container-item bg-white shadow-md rounded-lg p-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-                <p><strong>Nome:</strong> ${container.name}</p>
-                <p><strong>CPU:</strong> ${roundedCPU}%</p>
-                <p><strong>Memória Total:</strong> ${totalMemoryGB} GB</p>
+                <h5 class="text-sm font-bold text-blue-600">${containerNameWithoutSlash}</h5>
+                <hr><br>
+                <p><strong>Uso do CPU:</strong> ${roundedCPU}%</p>
                 <p><strong>Memória Usada:</strong> ${usedMemoryGB} GB</p>
                 <p><strong>Disco Usado:</strong> ${diskUsedGB} GB</p>
+                <br>
                 <p><strong>Custo (CPU):</strong> R$ ${cpuCost}</p>
                 <p><strong>Custo (Memória):</strong> R$ ${memoryCost}</p>
+                <hr><br>
                 <p><strong>Custo Total:</strong> R$ ${totalCost}</p>
               </div>
             `;
