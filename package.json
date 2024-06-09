@@ -12,6 +12,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "systeminformation": "^5.22.10"
   }
